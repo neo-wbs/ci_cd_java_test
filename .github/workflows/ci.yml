@@ -1,0 +1,99 @@
+# Der Name erscheint im GitHub-Tab "Actions" als Überschrift des Workflows
+name: CI Pipeline
+
+# "on" definiert die TRIGGER — wann soll die Pipeline starten?
+on:
+  # Bei jedem Push auf den main-Branch
+  push:
+    branches: [ main ]
+  # Bei jedem Pull Request der in main gemergt werden will
+  pull_request:
+    branches: [ main ]
+  # Ermöglicht manuelles Starten über GitHub UI (Button "Run workflow")
+  workflow_dispatch:
+
+# "jobs" definiert alle Aufgaben. Jobs laufen PARALLEL (außer wenn
+# "needs:" angegeben ist — dann sequenziell).
+jobs:
+
+  # Job-ID: frei wählbarer Name, kein Leerzeichen
+  build-and-test:
+    # Anzeigename in der GitHub-UI
+    name: Build & Test
+    # runs-on: welche virtuelle Maschine soll GitHub starten?
+    # ubuntu-latest = aktuelle Ubuntu-Version, kostenlos für Public Repos
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # Step 1: Code auschecken
+      # "uses:" bedeutet: verwende eine fertige Action aus dem Marketplace
+      # actions/checkout@v4 ist die offizielle GitHub-Action die
+      # git clone + git checkout auf der VM ausführt.
+      # Ohne diesen Step wäre der Quellcode auf der VM nicht vorhanden!
+      - name: Code auschecken
+        uses: actions/checkout@v4
+
+      # Step 2: Java einrichten
+      # Die Ubuntu-VM hat standardmäßig kein JDK 25.
+      # actions/setup-java installiert es und setzt JAVA_HOME.
+      # "with:" übergibt Parameter an die Action — wie Funktionsargumente.
+      # distribution: "temurin" = Eclipse Temurin (OpenJDK-Variante)
+      # cache: maven = Maven lädt Dependencies nur beim ersten Mal,
+      #               danach aus dem Cache → Build wird schneller
+      - name: JDK 25 einrichten
+        uses: actions/setup-java@v4
+        with:
+          java-version: "25"
+          distribution: "temurin"
+          cache: maven
+
+      # Step 3: Kompilieren
+      # "run:" führt beliebige Shell-Befehle aus.
+      # --no-transfer-progress: unterdrückt den Download-Fortschrittsbalken
+      # (macht die Logs lesbarer)
+      - name: Kompilieren
+        run: mvn compile --no-transfer-progress
+
+      # Step 4: Tests + Coverage
+      # mvn verify führt compile + test + alle Checks aus.
+      # -P ci aktiviert das CI-Maven-Profil (strengerer Coverage-Check).
+      - name: Tests und Coverage
+        run: mvn verify --no-transfer-progress -P ci
+
+      # Step 5: Checkstyle Linting
+      # Prüft Code-Stil nach checkstyle.xml
+      - name: Checkstyle Linting
+        run: mvn checkstyle:check --no-transfer-progress
+
+      # Step 6: JAR bauen
+      # -DskipTests: Tests schon in Step 4 gelaufen, nicht nochmal.
+      - name: JAR bauen
+        run: mvn package -DskipTests --no-transfer-progress
+
+      # Step 7: JAR als Artefakt speichern
+      # Was ist ein "Artifact" hier?
+      # Wenn der Build fertig ist, wird die VM gelöscht.
+      # actions/upload-artifact rettet Dateien aus der VM und
+      # macht sie 30 Tage lang unter dem Tab "Actions" downloadbar.
+      # name: validator-jar  → der Name des Download-Pakets auf GitHub
+      # path: target/loginapp-*.jar → welche Datei(en) hochladen
+      #   Das * ist ein Wildcard: loginapp-1.0.0-SNAPSHOT.jar z.B.
+      # retention-days: 30  → nach 30 Tagen automatisch löschen
+      - name: JAR als Artefakt speichern
+        uses: actions/upload-artifact@v4
+        with:
+          name: loginapp-jar
+          path: target/loginapp-*.jar
+          retention-days: 30
+
+      # Step 8: Test-Reports hochladen (auch bei Fehlern!)
+      # if: always() → dieser Step läuft IMMER, auch wenn Tests fehlschlagen.
+      # Sonst könnte man die Fehlerberichte nicht runterladen.
+      - name: Test-Reports hochladen
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-reports
+          path: target/surefire-reports/
+          retention-days: 14
