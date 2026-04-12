@@ -69,6 +69,7 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
+                <!-- Version 0.8.13 kann erst mit jdk25 umgehen -->
                 <version>0.8.13</version>
                 <executions>
                     <!-- prepare-agent: aktiviert die Messung während der Tests -->
