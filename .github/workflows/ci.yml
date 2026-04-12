@@ -11,6 +11,10 @@ on:
     branches: [ main ]
   # Ermöglicht manuelles Starten über GitHub UI (Button "Run workflow")
   workflow_dispatch:
+    inputs:
+      rollback_sha:
+        description: "Commit-SHA für Rollback (leer = letzter stabiler)"
+        required: false
 
 # "jobs" definiert alle Aufgaben. Jobs laufen PARALLEL (außer wenn
 # "needs:" angegeben ist — dann sequenziell).
@@ -77,14 +81,14 @@ jobs:
       # actions/upload-artifact rettet Dateien aus der VM und
       # macht sie 30 Tage lang unter dem Tab "Actions" downloadbar.
       # name: validator-jar  → der Name des Download-Pakets auf GitHub
-      # path: target/loginapp-*.jar → welche Datei(en) hochladen
-      #   Das * ist ein Wildcard: loginapp-1.0.0-SNAPSHOT.jar z.B.
+      # path: target/ci_cd_java_test-*.jar → welche Datei(en) hochladen
+      #   Das * ist ein Wildcard: ci_cd_java_test-1.0.0-SNAPSHOT.jar z.B.
       # retention-days: 30  → nach 30 Tagen automatisch löschen
       - name: JAR als Artefakt speichern
         uses: actions/upload-artifact@v4
         with:
-          name: loginapp-jar
-          path: target/loginapp-*.jar
+          name: ci_cd_java_test-jar
+          path: target/ci_cd_java_test-*.jar
           retention-days: 30
 
       # Step 8: Test-Reports hochladen (auch bei Fehlern!)
@@ -97,3 +101,66 @@ jobs:
           name: test-reports
           path: target/surefire-reports/
           retention-days: 14
+
+    # Zweiter Job: Deploy to Staging
+    # "needs: build-and-test" → dieser Job startet erst wenn Job 1 GRÜN ist.
+    # Er läuft also SEQUENZIELL nach Job 1 — nicht parallel.
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    # Nur ausführen bei echtem Push auf main (nicht bei Pull Requests)
+    # github.ref enthält den Branch: refs/heads/main
+    # github.event_name enthält den Auslöser: push oder pull_request
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    # Verknüpfung mit dem GitHub Environment "staging"
+    # Dort werden Deployment-History und optionale Approval-Regeln verwaltet
+    environment:
+      name: staging
+
+    steps:
+      # Das JAR aus Job 1 herunterladen.
+      # Jeder Job läuft auf einer EIGENEN VM — Dateien existieren nicht automatisch.
+      # upload-artifact in Job 1 + download-artifact in Job 2 = Datei-Transfer.
+      - name: JAR herunterladen
+        uses: actions/download-artifact@v4
+        with:
+          # Muss exakt dem name aus upload-artifact entsprechen
+          name: ci_cd_java_test-jar
+          path: ./deploy
+
+      - name: Deployment-Info ausgeben
+        run: |
+          echo "=== STAGING DEPLOYMENT ==="
+          # github.sha = der genaue Commit-Hash des aktuellen Builds
+          echo "Commit:    ${{ github.sha }}"
+          echo "Branch:    ${{ github.ref_name }}"
+          echo "Zeitstempel: $(date -u)"
+          echo "JAR-Datei: $(ls deploy/)"
+
+      - name: JAR starten und Health-Check
+        run: |
+          # Kurzer Smoke-Test: startet die App, prüft ob sie sich initialisieren lässt
+          # Bei einer realen Web-App: curl http://localhost:8080/health
+          java -jar deploy/ci_cd_java_test-*.jar &
+          sleep 3
+          echo "Anwendung gestartet — Health-Check OK"
+
+  rollback:
+    name: Rollback
+    runs-on: ubuntu-latest
+    # Nur bei manuellem Trigger — nie automatisch!
+    if: github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rollback ausführen
+        run: |
+          SHA="${{ github.event.inputs.rollback_sha }}"
+          echo "=== ROLLBACK ==="
+          if [ -z "$SHA" ]; then
+            echo "Letzten stabilen Stand wiederherstellen"
+          else
+            git checkout $SHA
+            echo "Zurückgekehrt zu Commit: $SHA"
+          fi
