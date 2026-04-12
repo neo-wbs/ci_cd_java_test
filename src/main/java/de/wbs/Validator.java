@@ -1,6 +1,54 @@
 package de.wbs;
 
+import java.util.regex.Pattern;
+
 public class Validator {
+    /**
+     * Prüft ob eine E-Mail-Adresse syntaktisch gültig ist.
+     * <p>
+     * Der Regex ist in drei Teile aufgeteilt damit er lesbar bleibt.
+     * Pattern.compile() wird einmalig beim Laden der Klasse ausgeführt
+     * (static final) — nicht bei jedem Aufruf dieser Methode.
+     * <p>
+     * Aufbau:  local-part  @  domain
+     * <p>
+     *   local-part:  [a-zA-Z0-9._%+\-]+
+     *     Erlaubt vor dem @: Buchstaben, Ziffern, Punkt, Unterstrich,
+     *     Prozent, Plus, Bindestrich. Das + = mindestens 1 Zeichen.
+     *     Nicht erlaubt: Leerzeichen, @, Komma, Klammern usw.
+     * <p>
+     *   @  — muss genau einmal vorkommen.
+     * <p>
+     *   domain:  [a-zA-Z0-9.\-]+  \.  [a-zA-Z]{2,}
+     *     Domainname (Buchstaben, Ziffern, Punkt, Bindestrich),
+     *     dann ein echter Punkt (\. statt . weil . allein "beliebiges Zeichen" heißt),
+     *     dann TLD mit mindestens 2 Buchstaben (.de, .com, .museum ...).
+     * <p>
+     *   ^ und $ = Anfang und Ende des Strings.
+     *     Ohne diese würde "xyz invalid@test.de xyz" als gültig durchgehen.
+     * <p>
+     *     String-Verkettung bei Pattern.compile() ist bewusst gewählt: Java fügt die Teile
+     *     zur Compile-Zeit zusammen, der Regex ist also identisch zu einer Einzeiler-Version —
+     *     aber man sieht sofort, was welcher Teil tut.
+     */
+    private static final Pattern EMAIL_PATTERN = Pattern.compile(
+            "^"                    // Anfang des Strings
+            + "[a-zA-Z0-9._%+\\-]+"  // local-part: erlaubte Zeichen vor dem @
+            + "@"                  // das @-Zeichen selbst
+            + "[a-zA-Z0-9.\\-]+"  // Domainname
+            + "\\."                // Punkt vor der TLD (escaped!)
+            + "[a-zA-Z]{2,}"       // TLD: mindestens 2 Buchstaben
+            + "$"                  // Ende des Strings
+    );
+
+    public boolean isBetterValidEmail(String email) {
+        if (email == null || email.isBlank()) {
+            return false;
+        }
+        boolean valid = EMAIL_PATTERN.matcher(email).matches();
+        return valid;
+    }
+
     /**
      * Prüft ob eine E-Mail-Adresse gültig ist.
      * Regel: muss @ enthalten, muss einen Punkt nach dem @ haben.
