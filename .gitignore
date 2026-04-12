@@ -1,4 +1,4 @@
-target/      # Kompilierter Code — wird immer neu gebaut
+target     # Kompilierter Code — wird immer neu gebaut
 .idea        # IntelliJ-Einstellungen (rechnerspezifisch)
 .mvn
 *.iml        # IntelliJ Modul-Dateien
