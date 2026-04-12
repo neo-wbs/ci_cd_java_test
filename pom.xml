@@ -94,6 +94,21 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.4.2</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <!-- Sagt Java: diese Klasse beim Starten aufrufen -->
+                            <mainClass>de.wbs.Main</mainClass>
+                        </manifest>
+                    </archive>
+                    <!-- JAR-Dateiname: ci_cd_java_test-1.0.0-SNAPSHOT.jar -->
+                    <finalName>ci_cd_java_test-${project.version}</finalName>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 </project>
