@@ -30,7 +30,8 @@
             <build><plugins><plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.12</version>
+                <!-- Version 0.8.13 funktioniert erst mit jdk25 -->
+                <version>0.8.13</version>
                 <executions><execution>
                     <id>check</id>
                     <goals><goal>check</goal></goals>
