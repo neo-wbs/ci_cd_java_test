@@ -24,6 +24,30 @@
         </dependency>
     </dependencies>
 
+    <profiles>
+        <profile>
+            <id>ci</id>
+            <build><plugins><plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.12</version>
+                <executions><execution>
+                    <id>check</id>
+                    <goals><goal>check</goal></goals>
+                    <configuration><rules><rule>
+                        <element>BUNDLE</element>
+                        <limits><limit>
+                            <counter>LINE</counter>
+                            <value>COVEREDRATIO</value>
+                            <!-- 80% der Zeilen müssen durch Tests abgedeckt sein -->
+                            <minimum>0.80</minimum>
+                        </limit></limits>
+                    </rule></rules></configuration>
+                </execution></executions>
+            </plugin></plugins></build>
+        </profile>
+    </profiles>
+
     <build>
         <plugins>
             <!-- Surefire führt JUnit 5 Tests aus -->
@@ -41,6 +65,23 @@
                     <failsOnError>true</failsOnError>
                     <consoleOutput>true</consoleOutput>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.13</version>
+                <executions>
+                    <!-- prepare-agent: aktiviert die Messung während der Tests -->
+                    <execution>
+                        <goals><goal>prepare-agent</goal></goals>
+                    </execution>
+                    <!-- report: erzeugt HTML-Report nach den Tests -->
+                    <execution>
+                        <id>report</id>
+                        <phase>test</phase>
+                        <goals><goal>report</goal></goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

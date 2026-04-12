@@ -104,4 +104,33 @@ class ValidatorTest {
             assertTrue(msg.contains("8"), "Meldung sollte min. Länge erwähnen");
         }
     }
+
+    @Nested
+    @DisplayName("isBetterValidEmail — Regex-Validierung")
+    class BetterEmailTests {
+
+        @ParameterizedTest(name = "[{0}] erwartet {1}")
+        @CsvSource({
+                "max@example.com,             true",
+                "user.name+tag@sub.domain.de, true",
+                "a@b.io,                      true",
+                "x_%+test@firma-gmbh.de,      true",
+
+                "kein-at-zeichen.de,          false",  // kein @
+                "@nodomain.com,               false",  // nichts vor @
+                "missing@tld,                 false",  // keine TLD
+                "leerzeichen @test.de,        false",  // Leerzeichen
+                "doppelt@@test.de,            false",  // zwei @
+                "user@.de,                    false",  // Punkt direkt nach @
+        })
+        void varianten(String email, boolean erwartet) {
+            assertEquals(erwartet, validator.isBetterValidEmail(email));
+        }
+
+        @ParameterizedTest
+        @NullAndEmptySource
+        void nullUndLeer(String email) {
+            assertFalse(validator.isBetterValidEmail(email));
+        }
+    }
 }
