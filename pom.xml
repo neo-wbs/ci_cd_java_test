@@ -32,7 +32,6 @@
             <artifactId>logback-classic</artifactId>
             <version>1.5.13</version>
         </dependency>
-
     </dependencies>
 
     <profiles>
@@ -106,20 +105,52 @@
                 </executions>
             </plugin>
             <plugin>
+                <!-- Normal reicht maven-jar-plugin, aber SLF4J und Logback sind nicht drin.
+                 Das Shade-Plugin packt alle Dependencies mit in ein einziges JAR -->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.6.0</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals><goal>shade</goal></goals>
+                        <configuration>
+                            <!--Wenn Shade ein Fat-JAR baut, erstellt es automatisch eine dependency-reduced-pom.xml-->
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
+                            <transformers>
+                                <!-- Setzt die Main-Class im Manifest -->
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>de.wbs.Main</mainClass>
+                                </transformer>
+                                <!-- Zusammenführen von Logback-Konfigurationsdateien -->
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/services/org.slf4j.spi.SLF4JServiceProvider</resource>
+                                </transformer>
+                            </transformers>
+                            <!-- Original-JAR (ohne Dependencies) separat behalten -->
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
+                            <shadedClassifierName>fat</shadedClassifierName>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <!--
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>3.4.2</version>
                 <configuration>
                     <archive>
                         <manifest>
-                            <!-- Sagt Java: diese Klasse beim Starten aufrufen -->
+                            &lt;!&ndash; Sagt Java: diese Klasse beim Starten aufrufen &ndash;&gt;
                             <mainClass>de.wbs.Main</mainClass>
                         </manifest>
                     </archive>
-                    <!-- JAR-Dateiname: ci_cd_java_test-1.0.0-SNAPSHOT.jar -->
-                    <finalName>ci_cd_java_test-${project.version}</finalName>
+                    &lt;!&ndash; JAR-Dateiname: ci_cd_java_test-1.0.0-SNAPSHOT.jar &ndash;&gt;
+                    &lt;!&ndash;<finalName>ci_cd_java_test-${project.version}</finalName>&ndash;&gt;
                 </configuration>
             </plugin>
+            -->
             <plugin>
                 <groupId>com.github.spotbugs</groupId>
                 <artifactId>spotbugs-maven-plugin</artifactId>
