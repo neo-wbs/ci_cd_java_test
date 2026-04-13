@@ -1,0 +1,40 @@
+<configuration>
+    <!-- Appender 1: Konsole -->
+    <!-- Appender = "wohin sollen Logs geschrieben werden?" -->
+    <appender name="CONSOLE"
+              class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <!-- Pattern definiert das Format jeder Log-Zeile: -->
+            <!-- %d{HH:mm:ss} = Zeit, %-5level = Level (5 Zeichen),  -->
+            <!-- %logger{20} = Klassenname, %msg = Nachricht           -->
+            <pattern>%d{HH:mm:ss} %-5level [%logger{20}] %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Appender 2: Datei mit täglicher Rotation -->
+    <appender name="FILE"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/loginapp.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.
+        TimeBasedRollingPolicy">
+            <!-- Täglich eine neue Datei: loginapp.2025-01-15.log -->
+            <fileNamePattern>logs/loginapp.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <!-- Nach 30 Tagen automatisch löschen -->
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} %-5level %logger{36}
+                - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Unser Package auf DEBUG: ausführliche Logs für Entwicklung -->
+    <logger name="de.kurs.loginapp" level="DEBUG"/>
+
+    <!-- Alles andere auf INFO: weniger Rauschen von Libraries -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
+    </root>
+
+</configuration>

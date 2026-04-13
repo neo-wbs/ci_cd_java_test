@@ -1,8 +1,14 @@
 package de.wbs;
 
 import java.util.regex.Pattern;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Validator {
+    // Logger: static final — eine Instanz pro Klasse, wird geteilt
+    // getLogger(Validator.class) sorgt für korrekten Klassennamen im Log
+    private static final Logger log = LoggerFactory.getLogger(Validator.class);
+
     /**
      * Prüft ob eine E-Mail-Adresse syntaktisch gültig ist.
      * <p>
@@ -54,11 +60,15 @@ public class Validator {
      * Regel: muss @ enthalten, muss einen Punkt nach dem @ haben.
      */
     public boolean isValidEmail(String email) {
+        // DEBUG: Details für Entwickler, nicht für Produktion
+        log.debug("Email-Prüfung gestartet für: {}", email);
         if (email == null || email.isBlank()) return false;
         int atIndex = email.indexOf("@");
         if (atIndex < 1) return false;
         // Punkt muss NACH dem @ kommen
-        return email.indexOf(".", atIndex) > atIndex + 1;
+        boolean result = email.indexOf(".", atIndex) > atIndex + 1;
+        log.debug("Email [{}] -> {}", email, result ? "gültig" : "ungültig");
+        return result;
     }
 
     /**
@@ -66,7 +76,12 @@ public class Validator {
      * Regeln: mind. 8 Zeichen, mind. 1 Großbuchstabe, mind. 1 Ziffer.
      */
     public boolean isValidPassword(String password) {
-        if (password == null || password.length() < 8) return false;
+        // NIEMALS das Passwort selbst loggen — nur die Länge!
+        log.debug("Passwort-Prüfung (Länge: {})", password == null ? "null" : password.length());
+        if (password == null || password.length() < 8) {
+            log.warn("Passwort zu kurz oder null");
+            return false;
+        }
         boolean hasUpper = password.chars()
                 .anyMatch(Character::isUpperCase);
         boolean hasDigit = password.chars()

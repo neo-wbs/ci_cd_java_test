@@ -2,12 +2,15 @@ package de.wbs;
 
 import javax.swing.*;
 import java.awt.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class LoginFrame extends JFrame {
     private final Validator validator = new Validator();
     private final JTextField emailField    = new JTextField(20);
     private final JPasswordField pwField  = new JPasswordField(20);
     private final JLabel statusLabel      = new JLabel(" ");
+    private static final Logger log = LoggerFactory.getLogger(LoginFrame.class);
 
     public LoginFrame() {
         super("Login");
@@ -43,9 +46,13 @@ public class LoginFrame extends JFrame {
         String email    = emailField.getText().trim();
         String password = new String(pwField.getPassword());
 
+        // INFO: normaler Betrieb — wer versucht sich einzuloggen?
+        log.info("Login-Versuch für: {}", email);
+
         String error = validator.validate(email, password);
         if (error != null) {
-            // Validierung fehlgeschlagen — rote Meldung
+            // WARN: fehlgeschlagener Login — potentiell sicherheitsrelevant
+            log.warn("Login fehlgeschlagen für: {} — {}", email, error);
             statusLabel.setForeground(Color.RED);
             statusLabel.setText(error);
         } else {
