@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>de.wbs</groupId>
-    <artifactId>ci_cd_java_test_1</artifactId>
+    <artifactId>ci_cd_java_test</artifactId>
     <version>1.0.0</version>
 
     <properties>
