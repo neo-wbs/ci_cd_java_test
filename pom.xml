@@ -120,6 +120,20 @@
                     <finalName>ci_cd_java_test-${project.version}</finalName>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>com.github.spotbugs</groupId>
+                <artifactId>spotbugs-maven-plugin</artifactId>
+                <version>4.8.6.2</version>
+                <configuration>
+                    <!-- Max: alle Regeln aktiv -->
+                    <effort>Max</effort>
+                    <!-- Medium: Bugs mit mittlerem Schweregrad melden -->
+                    <threshold>Medium</threshold>
+                    <!-- false: Fehler melden aber Build nicht abbrechen -->
+                    <!-- true wäre strenger: Build schlägt bei jedem Fund fehl -->
+                    <failOnError>false</failOnError>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 </project>

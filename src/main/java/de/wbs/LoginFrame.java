@@ -11,6 +11,11 @@ public class LoginFrame extends JFrame {
     private final JPasswordField pwField  = new JPasswordField(20);
     private final JLabel statusLabel      = new JLabel(" ");
     private static final Logger log = LoggerFactory.getLogger(LoginFrame.class);
+    // Passwort kommt aus Umgebungsvariable
+    // In Produktion: von GitHub Secret gesetzt
+    // Lokal: export APP_ADMIN_PASSWORD=testpasswort (Git Bash)
+    private static final String ADMIN_PASSWORD = System.getenv("APP_ADMIN_PASSWORD");
+
 
     public LoginFrame() {
         super("Login");
@@ -41,7 +46,7 @@ public class LoginFrame extends JFrame {
         setLocationRelativeTo(null); // Bildschirmmitte
     }
 
-    // Wird aufgerufen wenn der Login-Button geklickt wird
+    // Wird aufgerufen, wenn der Login-Button geklickt wird
     private void onLogin() {
         String email    = emailField.getText().trim();
         String password = new String(pwField.getPassword());
@@ -50,15 +55,23 @@ public class LoginFrame extends JFrame {
         log.info("Login-Versuch für: {}", email);
 
         String error = validator.validate(email, password);
-        if (error != null) {
-            // WARN: fehlgeschlagener Login — potentiell sicherheitsrelevant
-            log.warn("Login fehlgeschlagen für: {} — {}", email, error);
+
+        if (error == null) {
+            // Admin-Check: ist es der Admin mit dem richtigen Secret-Passwort?
+            if ("admin@firma.de".equals(email) && password.equals(ADMIN_PASSWORD)) {
+                log.warn("Admin-Login: {}", email);
+                statusLabel.setForeground(new Color(0, 0, 180));
+                statusLabel.setText("Admin-Login erfolgreich!");
+            } else {
+                log.info("Login erfolgreich: {}", email);
+                statusLabel.setForeground(new Color(0, 128, 0));
+                statusLabel.setText("Login erfolgreich!");
+            }
+        } else {
+            log.warn("Login fehlgeschlagen: {} — {}", email, error);
             statusLabel.setForeground(Color.RED);
             statusLabel.setText(error);
-        } else {
-            // Alles OK — grüne Erfolgsmeldung
-            statusLabel.setForeground(new Color(0, 128, 0));
-            statusLabel.setText("Login erfolgreich!");
         }
+
     }
 }
