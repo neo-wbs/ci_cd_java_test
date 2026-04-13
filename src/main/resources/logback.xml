@@ -14,11 +14,11 @@
     <!-- Appender 2: Datei mit täglicher Rotation -->
     <appender name="FILE"
               class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>logs/loginapp.log</file>
+        <file>logs/ci_cd_java_test.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.
         TimeBasedRollingPolicy">
-            <!-- Täglich eine neue Datei: loginapp.2025-01-15.log -->
-            <fileNamePattern>logs/loginapp.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <!-- Täglich eine neue Datei: ci_cd_java_test.2025-01-15.log -->
+            <fileNamePattern>logs/ci_cd_java_test.%d{yyyy-MM-dd}.log</fileNamePattern>
             <!-- Nach 30 Tagen automatisch löschen -->
             <maxHistory>30</maxHistory>
         </rollingPolicy>
@@ -29,7 +29,7 @@
     </appender>
 
     <!-- Unser Package auf DEBUG: ausführliche Logs für Entwicklung -->
-    <logger name="de.kurs.loginapp" level="DEBUG"/>
+    <logger name="de.wbs" level="DEBUG"/>
 
     <!-- Alles andere auf INFO: weniger Rauschen von Libraries -->
     <root level="INFO">

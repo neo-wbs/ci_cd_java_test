@@ -56,7 +56,7 @@ public class Validator {
     }
 
     /**
-     * Prüft ob eine E-Mail-Adresse gültig ist.
+     * Prüft, ob eine E-Mail-Adresse gültig ist.
      * Regel: muss @ enthalten, muss einen Punkt nach dem @ haben.
      */
     public boolean isValidEmail(String email) {
@@ -91,7 +91,7 @@ public class Validator {
 
     /**
      * Gibt eine lesbare Fehlermeldung zurück (für das UI).
-     * Gibt null zurück wenn alles gültig ist.
+     * Gibt null zurück, wenn alles gültig ist.
      */
     public String validate(String email, String password) {
         if (!isValidEmail(email))
