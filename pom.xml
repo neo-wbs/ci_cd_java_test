@@ -40,8 +40,8 @@
             <build><plugins><plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <!-- Version 0.8.13 funktioniert erst mit jdk25 -->
-                <version>0.8.13</version>
+                <!-- Version 0.8.14 funktioniert erst mit jdk25 -->
+                <version>0.8.14</version>
                 <executions><execution>
                     <id>check</id>
                     <goals><goal>check</goal></goals>
@@ -89,8 +89,8 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <!-- Version 0.8.13 funktioniert erst mit jdk25 -->
-                <version>0.8.13</version>
+                <!-- Version 0.8.14 funktioniert erst mit jdk25 -->
+                <version>0.8.14</version>
                 <executions>
                     <!-- prepare-agent: aktiviert die Messung während der Tests -->
                     <execution>
